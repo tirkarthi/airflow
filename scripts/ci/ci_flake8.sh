@@ -30,7 +30,7 @@ export AIRFLOW_CONTAINER_BUILD_NPM="false"
 . ./hooks/build
 
 set -x
-docker run --entrypoint /opt/airflow/scripts/ci/in_container/run_pylint.sh "${AIRFLOW_SLIM_CI_IMAGE}"
+docker run --entrypoint flake8 "${AIRFLOW_SLIM_CI_IMAGE}"
 set +x
 
 popd || exit 1
