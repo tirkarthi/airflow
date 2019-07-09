@@ -1057,5 +1057,26 @@ class TestConnectionModelView(unittest.TestCase):
         self.assertIsNone(conn.extra_dejson['extra__google_cloud_platform__num_retries'])
 
 
+class TestQueryView(unittest.TestCase):
+
+    CREATE_ENDPOINT = '/admin/queryview/'
+
+    def setUp(self):
+        super(TestQueryView, self).setUp()
+        configuration.load_test_config()
+        app = application.create_app(testing=True)
+        app.config['WTF_CSRF_METHODS'] = []
+        self.app = app.test_client()
+
+    def test_unimplemented_sql_hook(self):
+        data = {'conn_id': 'hive_cli_default', 'csv': "true", "sql": ""}
+        response = self.app.post(
+            self.CREATE_ENDPOINT,
+            data=data
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('No data', response.data.decode())
+
+
 if __name__ == '__main__':
     unittest.main()

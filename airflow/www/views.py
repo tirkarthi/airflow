@@ -2281,6 +2281,7 @@ class QueryView(wwwutils.DataProfilingMixin, AirflowViewMixin, BaseView):
             'conn_id': conn_id_str,
             'sql': sql,
         }
+        df = None
         results = None
         has_data = False
         error = False
@@ -2302,7 +2303,7 @@ class QueryView(wwwutils.DataProfilingMixin, AirflowViewMixin, BaseView):
                 flash(str(e), 'error')
                 error = True
 
-        if has_data and len(df) == QUERY_LIMIT:
+        if has_data and df is not None and len(df) == QUERY_LIMIT:
             flash(
                 "Query output truncated at " + str(QUERY_LIMIT) +
                 " rows", 'info')
@@ -2310,7 +2311,7 @@ class QueryView(wwwutils.DataProfilingMixin, AirflowViewMixin, BaseView):
         if not has_data and error:
             flash('No data', 'error')
 
-        if csv:
+        if csv and df is not None:
             return Response(
                 response=df.to_csv(index=False),
                 status=200,
