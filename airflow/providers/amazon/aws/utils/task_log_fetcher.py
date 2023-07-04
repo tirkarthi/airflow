@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from logging import Logger
 from threading import Event, Thread
 from typing import Generator
@@ -26,6 +26,7 @@ from typing import Generator
 from botocore.exceptions import ClientError, ConnectionClosedError
 
 from airflow.providers.amazon.aws.hooks.logs import AwsLogsHook
+from airflow.utils.timezone import utcfromtimestamp
 
 
 class AwsTaskLogFetcher(Thread):
@@ -85,7 +86,7 @@ class AwsTaskLogFetcher(Thread):
 
     @staticmethod
     def event_to_str(event: dict) -> str:
-        event_dt = datetime.utcfromtimestamp(event["timestamp"] / 1000.0)
+        event_dt = utcfromtimestamp(event["timestamp"] / 1000.0)
         formatted_event_dt = event_dt.strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
         message = event["message"]
         return f"[{formatted_event_dt}] {message}"

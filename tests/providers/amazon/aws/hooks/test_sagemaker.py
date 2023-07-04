@@ -36,6 +36,7 @@ from airflow.providers.amazon.aws.hooks.sagemaker import (
     secondary_training_status_changed,
     secondary_training_status_message,
 )
+from airflow.utils.timezone import utcfromtimestamp
 
 role = "arn:aws:iam:role/test-role"
 
@@ -528,7 +529,7 @@ class TestSageMakerHook:
     def test_secondary_training_status_message_status_changed(self):
         now = datetime.now(tzlocal())
         SECONDARY_STATUS_DESCRIPTION_1["LastModifiedTime"] = now
-        expected_time = datetime.utcfromtimestamp(time.mktime(now.timetuple())).strftime("%Y-%m-%d %H:%M:%S")
+        expected_time = utcfromtimestamp(time.mktime(now.timetuple())).strftime("%Y-%m-%d %H:%M:%S")
         expected = f"{expected_time} {status} - {message}"
         assert (
             secondary_training_status_message(SECONDARY_STATUS_DESCRIPTION_1, SECONDARY_STATUS_DESCRIPTION_2)

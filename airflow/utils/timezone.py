@@ -63,6 +63,11 @@ def utcnow() -> dt.datetime:
     return result
 
 
+def utcfromtimestamp(timestamp) -> dt.datetime:
+    """Get the date and time in UTC for the timestamp."""
+    return dt.datetime.fromtimestamp(timestamp, tz=utc)
+
+
 def utc_epoch() -> dt.datetime:
     """Gets the epoch in the users timezone."""
     # pendulum utcnow() is not used as that sets a TimezoneInfo object

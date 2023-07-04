@@ -17,7 +17,6 @@
 # under the License.
 from __future__ import annotations
 
-from datetime import datetime
 from functools import cached_property
 
 import watchtower
@@ -26,6 +25,7 @@ from airflow.configuration import conf
 from airflow.providers.amazon.aws.hooks.logs import AwsLogsHook
 from airflow.utils.log.file_task_handler import FileTaskHandler
 from airflow.utils.log.logging_mixin import LoggingMixin
+from airflow.utils.timezone import utcfromtimestamp
 
 
 class CloudwatchTaskHandler(FileTaskHandler, LoggingMixin):
@@ -118,7 +118,7 @@ class CloudwatchTaskHandler(FileTaskHandler, LoggingMixin):
         return "\n".join(self._event_to_str(event) for event in events)
 
     def _event_to_str(self, event: dict) -> str:
-        event_dt = datetime.utcfromtimestamp(event["timestamp"] / 1000.0)
+        event_dt = utcfromtimestamp(event["timestamp"] / 1000.0)
         formatted_event_dt = event_dt.strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
         message = event["message"]
         return f"[{formatted_event_dt}] {message}"
