@@ -24,6 +24,7 @@ import { useOffsetTop } from "src/utils";
 interface Props {
   parsedLogs: string;
   wrap: boolean;
+  analyze: boolean;
   tryNumber: number;
   unfoldedGroups: Array<string>;
   setUnfoldedLogGroup: React.Dispatch<React.SetStateAction<string[]>>;
@@ -35,6 +36,7 @@ const LogBlock = ({
   tryNumber,
   unfoldedGroups,
   setUnfoldedLogGroup,
+  analyze,
 }: Props) => {
   const [autoScroll, setAutoScroll] = useState(true);
 

@@ -571,3 +571,31 @@ class FileTaskHandler(logging.Handler):
         * Each element in the logs list should be the content of one file.
         """
         raise NotImplementedError
+
+
+class ColorFileHandler(FileTaskHandler):
+    """Handler to add ansi codes to given keywords for highlighting logs in frontend."""
+
+    ERROR_KEYWORDS = ["exception", "error", "not found", "permission denied", "cannot stat", "no such"]
+
+    def _read(self, ti: TaskInstance, try_number: int, metadata: dict[str, Any] | None = None):
+        import colorama
+
+        log, metadata = super()._read(ti, try_number, metadata)
+        processed_lines = []
+
+        for line in log.splitlines():
+            if any(keyword in line.lower() for keyword in self.ERROR_KEYWORDS):
+                if line.startswith("["):
+                    timestamp, level, msg = line.split(maxsplit=2)
+                    processed_lines.append(
+                        f"{timestamp} {level} {colorama.Style.BRIGHT}{colorama.Fore.RED}{msg}{colorama.Fore.RESET}{colorama.Style.RESET_ALL}"
+                    )
+                else:
+                    processed_lines.append(
+                        f"{colorama.Style.BRIGHT}{colorama.Fore.RED}{line}{colorama.Fore.RESET}{colorama.Style.RESET_ALL}"
+                    )
+            else:
+                processed_lines.append(line)
+
+        return "\n".join(processed_lines), metadata

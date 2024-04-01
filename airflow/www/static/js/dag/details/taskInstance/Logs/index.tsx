@@ -55,6 +55,7 @@ interface FileSourceOption {
   value: string;
 }
 
+const logAnalysisEnabled = getMetaValue("log_analysis_enabled") === "True";
 const showExternalLogRedirect =
   getMetaValue("show_external_log_redirect") === "True";
 const externalLogName = getMetaValue("external_log_name");
@@ -115,6 +116,7 @@ const Logs = ({
   const [selectedTryNumber, setSelectedTryNumber] = useState<
     number | undefined
   >();
+  const [analyze, setAnalyze] = useState<boolean>(false);
   const [wrap, setWrap] = useState(getMetaValue("default_wrap") === "True");
   const [logLevelFilters, setLogLevelFilters] = useState<Array<LogLevelOption>>(
     []
@@ -126,13 +128,14 @@ const Logs = ({
   const { timezone } = useTimezone();
 
   const taskTryNumber = selectedTryNumber || tryNumber || 1;
-  const { data, isLoading } = useTaskLog({
+  const { data, isLoading, refetch } = useTaskLog({
     dagId,
     dagRunId,
     taskId,
     mapIndex,
     taskTryNumber,
     state,
+    analyze,
   });
 
   const params = new URLSearchParamsWrapper({
@@ -162,6 +165,12 @@ const Logs = ({
 
   const logAttemptDropdownLimit = 10;
   const showDropdown = internalIndexes.length > logAttemptDropdownLimit;
+  const showAnalyzeButton = logAnalysisEnabled && state === "failed";
+
+  function setAnalyzeRefetch() {
+    setAnalyze(true);
+    refetch();
+  }
 
   useEffect(() => {
     // Reset fileSourceFilters and selected attempt when changing to
@@ -181,7 +190,7 @@ const Logs = ({
     ) {
       setFileSourceFilters([]);
     }
-  }, [data, fileSourceFilters, fileSources, taskTryNumber, tryNumber]);
+  }, [data, fileSourceFilters, fileSources, taskTryNumber, tryNumber, analyze]);
 
   return (
     <>
@@ -286,6 +295,12 @@ const Logs = ({
             >
               <Text as="strong">Wrap</Text>
             </Checkbox>
+            {showAnalyzeButton && (
+              <Button colorScheme="blue" onClick={setAnalyzeRefetch}>
+                Analyze
+              </Button>
+            )}
+
             <LogLink
               dagId={dagId}
               taskId={taskId}
@@ -335,6 +350,7 @@ const Logs = ({
             tryNumber={taskTryNumber}
             unfoldedGroups={unfoldedLogGroups}
             setUnfoldedLogGroup={setUnfoldedLogGroup}
+            analyze={analyze}
           />
         )
       )}

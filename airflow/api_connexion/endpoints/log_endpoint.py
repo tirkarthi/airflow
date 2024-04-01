@@ -40,6 +40,42 @@ if TYPE_CHECKING:
     from airflow.api_connexion.types import APIResponse
 
 
+KEYWORDS = {
+    "exception": "",
+    "error": "",
+    "not found": "This usually indicates the resource is not present. In case of missing files and directories you can use ls -alth path_to_file to check for existence",
+    "permission denied": "Please check relevant permissions to access the resource",
+    "cannot stat": "",
+    "no such": "This usually indicates the resource is not present. In case of missing files and directories you can use ls -alth path_to_file to check for existence",
+}
+
+
+def analyze_logs(logs):
+    list_logs = list(logs)
+    helpful_lines = []
+
+    yield "Analyzed logs and following lines could be helpful in debugging \n"
+
+    for log in list_logs:
+        lines = log.splitlines()
+        for index, line in enumerate(lines):
+            keyword = next((keyword for keyword in KEYWORDS if keyword in line.lower()), False)
+            if keyword:
+                context = lines[index - 2 : index + 2]
+                for line in context:
+                    if "group::" not in line and line not in helpful_lines:
+                        helpful_lines.append(line)
+
+                if suggestion := KEYWORDS.get(keyword):
+                    helpful_lines.append(f"Hint : {suggestion} \n")
+
+    for line in helpful_lines:
+        yield f"{line} \n"
+
+    for log in list_logs:
+        yield log
+
+
 @security.requires_access_dag("GET", DagAccessEntity.TASK_LOGS)
 @provide_session
 def get_log(
@@ -49,6 +85,7 @@ def get_log(
     task_id: str,
     task_try_number: int,
     full_content: bool = False,
+    analyze: bool = False,
     map_index: int = -1,
     token: str | None = None,
     session: Session = NEW_SESSION,
@@ -111,4 +148,9 @@ def get_log(
     # text/plain. Stream
     logs = task_log_reader.read_log_stream(ti, task_try_number, metadata)
 
-    return Response(logs, headers={"Content-Type": return_type})
+    if analyze:
+        analyzed_logs = analyze_logs(logs)
+    else:
+        analyzed_logs = logs
+
+    return Response(analyzed_logs, headers={"Content-Type": return_type})

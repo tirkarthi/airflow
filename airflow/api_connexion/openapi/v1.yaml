@@ -1863,6 +1863,7 @@ paths:
       - $ref: "#/components/parameters/TaskID"
       - $ref: "#/components/parameters/TaskTryNumber"
       - $ref: "#/components/parameters/FullContent"
+      - $ref: "#/components/parameters/Analyze"
       - $ref: "#/components/parameters/FilterMapIndex"
       - $ref: "#/components/parameters/ContinuationToken"
 
@@ -5256,6 +5257,15 @@ components:
       description: |
         A full content will be returned.
         By default, only the first fragment will be returned.
+
+    Analyze:
+      in: query
+      name: analyze
+      schema:
+        type: boolean
+      required: false
+      description: |
+        Analyze logs using the callback.
 
     ContinuationToken:
       in: query

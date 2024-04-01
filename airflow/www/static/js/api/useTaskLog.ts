@@ -38,6 +38,7 @@ const useTaskLog = ({
   taskTryNumber,
   mapIndex,
   fullContent = false,
+  analyze = false,
   state,
 }: Props) => {
   let url: string = "";
@@ -49,6 +50,7 @@ const useTaskLog = ({
       .replace(/-1$/, taskTryNumber.toString());
   }
 
+  console.log(analyze);
   const { isRefreshOn } = useAutoRefresh();
 
   // Only refresh is the state is pending
@@ -65,12 +67,25 @@ const useTaskLog = ({
   const expectingLogs = isStatePending || isPreviousStatePending;
 
   return useQuery(
-    ["taskLogs", dagId, dagRunId, taskId, mapIndex, taskTryNumber, fullContent],
+    [
+      "taskLogs",
+      dagId,
+      dagRunId,
+      taskId,
+      mapIndex,
+      taskTryNumber,
+      fullContent,
+      analyze,
+    ],
     () => {
       setPrevState(isStatePending);
       return axios.get<AxiosResponse, string>(url, {
         headers: { Accept: "text/plain" },
-        params: { map_index: mapIndex, full_content: fullContent },
+        params: {
+          map_index: mapIndex,
+          full_content: fullContent,
+          analyze,
+        },
       });
     },
     {

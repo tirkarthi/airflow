@@ -602,6 +602,8 @@ export interface paths {
          * By default, only the first fragment will be returned.
          */
         full_content?: components["parameters"]["FullContent"];
+        /** Analyze logs using the callback. */
+        analyze?: components["parameters"]["Analyze"];
         /** Filter on map index for mapped task. */
         map_index?: components["parameters"]["FilterMapIndex"];
         /**
@@ -2435,6 +2437,8 @@ export interface components {
      * By default, only the first fragment will be returned.
      */
     FullContent: boolean;
+    /** @description Analyze logs using the callback. */
+    Analyze: boolean;
     /**
      * @description A token that allows you to continue fetching logs.
      * If passed, it will specify the location from which the download should be continued.
@@ -4350,6 +4354,8 @@ export interface operations {
          * By default, only the first fragment will be returned.
          */
         full_content?: components["parameters"]["FullContent"];
+        /** Analyze logs using the callback. */
+        analyze?: components["parameters"]["Analyze"];
         /** Filter on map index for mapped task. */
         map_index?: components["parameters"]["FilterMapIndex"];
         /**
