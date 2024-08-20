@@ -46,6 +46,7 @@ import useDag from "./useDag";
 import useDagCode from "./useDagCode";
 import useDagDetails from "./useDagDetails";
 import useHealth from "./useHealth";
+import useDashboard from "./useDashboard";
 import usePools from "./usePools";
 import useDags from "./useDags";
 import useDagRuns from "./useDagRuns";
@@ -88,6 +89,7 @@ export {
   useGraphData,
   useGridData,
   useHealth,
+  useDashboard,
   useMappedInstances,
   useMarkFailedRun,
   useMarkFailedTask,

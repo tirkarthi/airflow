@@ -1193,6 +1193,61 @@ class Airflow(AirflowBaseView):
             standalone_dag_processor=standalone_dag_processor,
         )
 
+    @expose("/dashboard")
+    def dashboard(self):
+        """Dashboard view."""
+        state_color_mapping = State.state_color.copy()
+        state_color_mapping["no_status"] = state_color_mapping.pop(None)
+        standalone_dag_processor = conf.getboolean("scheduler", "standalone_dag_processor")
+        return self.render_template(
+            "airflow/dashboard.html",
+            auto_refresh_interval=conf.getint("webserver", "auto_refresh_interval"),
+            state_color_mapping=state_color_mapping,
+            standalone_dag_processor=standalone_dag_processor,
+        )
+
+    @expose("/dashboard_api")
+    def dashboard_api(self):
+        """Dashboard info API."""
+        allowed_dag_ids = get_auth_manager().get_permitted_dag_ids(user=g.user)
+
+        data = {
+            "dag_runs": [],
+            "task_instances": []
+        }
+        tis = defaultdict(list)
+        with create_session() as session:
+            dag_runs = (session.query(DagModel.dag_id,
+                                      DagModel.next_dagrun_create_after,
+                                      DagModel.timetable_description,
+                                      DagModel.schedule_interval)
+                        .filter(DagModel.next_dagrun_create_after.is_not(None),
+                                DagModel.is_paused.is_(False),
+                                DagModel.is_active.is_(True),
+                                DagModel.dag_id.in_(allowed_dag_ids))
+                        .order_by(desc(DagModel.next_dagrun_create_after)).limit(100).all())
+
+            task_instances = (session.query(TaskInstance.task_id,
+                                            TaskInstance.dag_id,
+                                            TaskInstance.run_id,
+                                            TaskInstance.end_date,
+                                            TaskInstance.state,
+                                            TaskInstance.start_date)
+                              .filter(TaskInstance.start_date >= timezone.utcnow() - datetime.timedelta(hours=24),
+                                      TaskInstance.dag_id.in_(allowed_dag_ids))
+                              .order_by(desc(TaskInstance.end_date)).all())
+
+        for dr in dag_runs:
+            data["dag_runs"].append(dict(dr))
+
+        for ti in task_instances:
+            tis[ti.state].append(dict(ti))
+
+
+        data["task_instances"] = tis
+        return flask.json.jsonify(data)
+
+
     @expose("/next_run_datasets_summary", methods=["POST"])
     @provide_session
     def next_run_datasets_summary(self, session: Session = NEW_SESSION):
