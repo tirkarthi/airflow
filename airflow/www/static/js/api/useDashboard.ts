@@ -20,18 +20,20 @@
 import axios, { AxiosResponse } from "axios";
 import { useQuery } from "react-query";
 import type { API } from "src/types";
+import { useAutoRefresh } from "src/context/autorefresh";
 
 import { getMetaValue } from "src/utils";
 
 const dashboardUrl = "/dashboard_api";
 
-const useDashboard = () =>
-  useQuery(
+export default function useDashboard() {
+  const { isRefreshOn } = useAutoRefresh();
+
+  return useQuery(
     ["dashboard"],
     async () => axios.get<AxiosResponse, API.HealthInfo>(dashboardUrl),
     {
-      refetchInterval: (autoRefreshInterval || 1) * 1000,
+      refetchInterval: isRefreshOn && (autoRefreshInterval || 1) * 1000,
     }
   );
-
-export default useDashboard;
+}

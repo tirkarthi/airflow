@@ -23,6 +23,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import createCache from "@emotion/cache";
 import { motion, AnimatePresence } from "framer-motion";
+import AutoRefresh from "src/components/AutoRefresh";
+import { AutoRefreshProvider } from "../context/autorefresh";
 
 import {
   Card,
@@ -37,6 +39,7 @@ import {
   BreadcrumbLink,
   Box,
   Flex,
+  Spacer,
   Heading,
   Link,
   SimpleGrid,
@@ -182,15 +185,10 @@ function TaskInstanceStatus(state, items) {
                   borderLeftColor={color}
                   margin="10px"
                   size="md"
+                  enter={{ duration: 10 }}
                   initial={{ opacity: 0, y: "-100%" }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: "100%" }}
-                  transition={{
-                    exit: { opacity: 0, delay: 1 },
-                    enter: { duration: 1 },
-                    initial: { opacity: 0, y: "-100%" },
-                    animate: { opacity: 1, y: 0 },
-                  }}
+                  animate={{ opacity: 1, y: "10%" }}
+                  exit={{ opacity: 0, x: "10%" }}
                   transition="0.5s linear"
                   key={`${item.dagId}.${item.runId}.${item.taskId}`}
                 >
@@ -251,9 +249,13 @@ function Dashboard() {
         flexDirection="column"
         justifyContent="space-between"
       >
-        <Heading mt={3} mb={2} fontWeight="normal" size="lg">
-          Dashboard
-        </Heading>
+        <Flex minWidth="100%" alignItems="center">
+          <Heading mt={3} mb={2} fontWeight="normal" size="lg">
+            Dashboard
+          </Heading>
+          <Spacer />
+          <AutoRefresh />
+        </Flex>
 
         <SimpleGrid columns="4" spacing={5} width="100%">
           {TaskInstanceStatus("running", data["taskInstances"]["running"])}
@@ -281,7 +283,9 @@ if (mainElement) {
   const reactRoot = createRoot(mainElement);
   reactRoot.render(
     <App cache={cache}>
-      <Dashboard />
+      <AutoRefreshProvider>
+        <Dashboard />
+      </AutoRefreshProvider>
     </App>
   );
 }
