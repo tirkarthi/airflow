@@ -1227,15 +1227,22 @@ class Airflow(AirflowBaseView):
                                 DagModel.dag_id.in_(allowed_dag_ids))
                         .order_by(desc(DagModel.next_dagrun_create_after)).limit(100).all())
 
-            task_instances = (session.query(TaskInstance.task_id,
-                                            TaskInstance.dag_id,
-                                            TaskInstance.run_id,
-                                            TaskInstance.end_date,
-                                            TaskInstance.state,
-                                            TaskInstance.start_date)
-                              .filter(TaskInstance.start_date >= timezone.utcnow() - datetime.timedelta(hours=24),
-                                      TaskInstance.dag_id.in_(allowed_dag_ids))
-                              .order_by(desc(TaskInstance.end_date)).all())
+            # https://stackoverflow.com/a/40637646
+            # Get top 100 rows in last 24 hours per state.
+            subquery = (session.query(TaskInstance.task_id,
+                                      TaskInstance.dag_id,
+                                      TaskInstance.run_id,
+                                      TaskInstance.end_date,
+                                      TaskInstance.state,
+                                      TaskInstance.start_date,
+                                      func.rank().over(
+                                          order_by=(TaskInstance.end_date.desc(), TaskInstance.start_date.desc()),
+                                          partition_by=TaskInstance.state
+                                      ).label('rnk')).subquery())
+
+            task_instances = session.query(subquery).filter(
+                subquery.c.rnk <= 100, subquery.c.start_date >= timezone.utcnow() - datetime.timedelta(hours=24),
+            ).all()
 
         for dr in dag_runs:
             data["dag_runs"].append(dict(dr))

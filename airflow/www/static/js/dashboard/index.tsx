@@ -22,7 +22,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import createCache from "@emotion/cache";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Card,
@@ -71,7 +71,7 @@ function PlannedDagRun(items) {
         <CardHeader mb={0} pb={0}>
           <Text>
             {" "}
-            <Link href={`/dags/${items[i].dagId}/grid`} wrap="yes">
+            <Link href={encodeURI(`/dags/${items[i].dagId}/grid`)} wrap="yes">
               {" "}
               {items[i].dagId}{" "}
             </Link>{" "}
@@ -86,7 +86,7 @@ function PlannedDagRun(items) {
   }
 
   return (
-    <Box mt={50}>
+    <Box mt={50} pb={5} mb={5}>
       <Center>
         {" "}
         <Text> Upcoming DagRuns - {count} </Text>{" "}
@@ -129,7 +129,11 @@ function TaskInstanceStatus(state, items) {
           <Text>
             {" "}
             <Link
-              href={`/dags/${items[i].dagId}/grid?dag_run_id=${items[i].runId}&task_id=${items[i].taskId}`}
+              href={`/dags/${
+                items[i].dagId
+              }/grid?dag_run_id=${encodeURIComponent(items[i].runId)}&task_id=${
+                items[i].taskId
+              }`}
               wrap="yes"
             >
               {" "}
@@ -140,7 +144,7 @@ function TaskInstanceStatus(state, items) {
         <CardBody>
           <Text>
             Dag ID :
-            <Link href={`/dags/${items[i].dagId}/grid`} wrap="yes">
+            <Link href={encodeURI(`/dags/${items[i].dagId}/grid`)} wrap="yes">
               {" "}
               {items[i].dagId}{" "}
             </Link>{" "}
@@ -168,7 +172,70 @@ function TaskInstanceStatus(state, items) {
       </Center>
 
       <Box mt={2} height="90vh" overflowY="scroll">
-        {rows}
+        <motion.div>
+          <AnimatePresence>
+            {items.map((item, index) => {
+              return (
+                <Card
+                  as={motion.div}
+                  borderLeftWidth="5px"
+                  borderLeftColor={color}
+                  margin="10px"
+                  size="md"
+                  initial={{ opacity: 0, y: "-100%" }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: "100%" }}
+                  transition={{
+                    exit: { opacity: 0, delay: 1 },
+                    enter: { duration: 1 },
+                    initial: { opacity: 0, y: "-100%" },
+                    animate: { opacity: 1, y: 0 },
+                  }}
+                  transition="0.5s linear"
+                  key={`${item.dagId}.${item.runId}.${item.taskId}`}
+                >
+                  <CardHeader mb={0} pb={0}>
+                    <Text>
+                      {" "}
+                      <Link
+                        href={`/dags/${
+                          item.dagId
+                        }/grid?dag_run_id=${encodeURIComponent(
+                          item.runId
+                        )}&task_id=${item.taskId}`}
+                        wrap="yes"
+                      >
+                        {" "}
+                        {item.taskId}{" "}
+                      </Link>{" "}
+                    </Text>
+                  </CardHeader>
+                  <CardBody>
+                    <Text>
+                      Dag ID :
+                      <Link
+                        href={encodeURI(`/dags/${item.dagId}/grid`)}
+                        wrap="yes"
+                      >
+                        {" "}
+                        {item.dagId}{" "}
+                      </Link>{" "}
+                    </Text>
+
+                    <Text>Started : {item.startDate} </Text>
+                    {item.endDate && <Text>Ended : {item.endDate} </Text>}
+                    <Text>
+                      Duration :{" "}
+                      {formatDuration(
+                        getDuration(item.startDate, item.endDate)
+                      )}{" "}
+                    </Text>
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </AnimatePresence>
+        </motion.div>
       </Box>
     </Box>
   );
