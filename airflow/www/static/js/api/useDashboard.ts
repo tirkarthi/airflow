@@ -26,12 +26,15 @@ import { getMetaValue } from "src/utils";
 
 const dashboardUrl = "/dashboard_api";
 
-export default function useDashboard() {
+export default function useDashboard(duration) {
   const { isRefreshOn } = useAutoRefresh();
 
   return useQuery(
-    ["dashboard"],
-    async () => axios.get<AxiosResponse, API.HealthInfo>(dashboardUrl),
+    ["dashboard", duration],
+    async () =>
+      axios.get<AxiosResponse, API.HealthInfo>(dashboardUrl, {
+        params: { duration },
+      }),
     {
       refetchInterval: isRefreshOn && (autoRefreshInterval || 1) * 1000,
     }

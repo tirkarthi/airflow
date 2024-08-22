@@ -45,6 +45,9 @@ import {
   SimpleGrid,
   Center,
   ExternalLinkIcon,
+  RadioGroup,
+  Radio,
+  useRadioGroup,
 } from "@chakra-ui/react";
 
 import { formatDuration, getDuration } from "src/datetime_utils";
@@ -68,34 +71,55 @@ function PlannedDagRun(items) {
 
   let count = items.length;
 
-  for (var i = 0; i < count; i++) {
-    rows.push(
-      <Card borderLeftWidth="5px" margin="10px" size="md" key={i}>
-        <CardHeader mb={0} pb={0}>
-          <Text>
-            {" "}
-            <Link href={encodeURI(`/dags/${items[i].dagId}/grid`)} wrap="yes">
-              {" "}
-              {items[i].dagId}{" "}
-            </Link>{" "}
-          </Text>
-        </CardHeader>
-        <CardBody>
-          <Text>Start at : {items[i].nextDagrunCreateAfter} </Text>
-          <Text>Schedule : {items[i].timetableDescription} </Text>
-        </CardBody>
-      </Card>
-    );
-  }
-
   return (
-    <Box mt={50} pb={5} mb={5}>
+    <Box>
       <Center>
         {" "}
-        <Text> Upcoming DagRuns - {count} </Text>{" "}
+        <Text> Upcoming - {count} </Text>{" "}
       </Center>
       <Box paddingTop="10px" marginTop="10px" height="90vh" overflowY="scroll">
-        {rows}
+        <motion.div>
+          <AnimatePresence>
+            {items.map((item, index) => {
+              return (
+                <Card
+                  as={motion.div}
+                  borderLeftWidth="5px"
+                  margin="10px"
+                  size="md"
+                  enter={{ duration: 10 }}
+                  initial={{ opacity: 0, y: "-100%" }}
+                  animate={{ opacity: 1, y: "10%" }}
+                  exit={{ opacity: 0, x: "10%" }}
+                  transition="0.5s linear"
+                  key={`${item.dagId}-${item.nextDagrunCreateAfter}`}
+                >
+                  <CardHeader mb={0} pb={0}>
+                    <Text>
+                      {" "}
+                      <Link
+                        href={encodeURI(`/dags/${item.dagId}/grid`)}
+                        wrap="yes"
+                      >
+                        {" "}
+                        {item.dagId}{" "}
+                      </Link>{" "}
+                    </Text>
+                  </CardHeader>
+                  <CardBody>
+                    <Text>Start at : {item.nextDagrunCreateAfter} </Text>
+                    <Text>
+                      {" "}
+                      Schedule :{" "}
+                      {item.timetableDescription || item.scheduleInterval}{" "}
+                    </Text>
+                  </CardBody>
+                </Card>
+              );
+            })}
+            ;
+          </AnimatePresence>
+        </motion.div>
       </Box>
     </Box>
   );
@@ -118,51 +142,6 @@ function TaskInstanceStatus(state, items) {
   }
 
   let count = items.length;
-
-  for (var i = 0; i < count; i++) {
-    rows.push(
-      <Card
-        borderLeftWidth="5px"
-        borderLeftColor={color}
-        margin="10px"
-        size="md"
-        key={i}
-      >
-        <CardHeader mb={0} pb={0}>
-          <Text>
-            {" "}
-            <Link
-              href={`/dags/${
-                items[i].dagId
-              }/grid?dag_run_id=${encodeURIComponent(items[i].runId)}&task_id=${
-                items[i].taskId
-              }`}
-              wrap="yes"
-            >
-              {" "}
-              {items[i].taskId}{" "}
-            </Link>{" "}
-          </Text>
-        </CardHeader>
-        <CardBody>
-          <Text>
-            Dag ID :
-            <Link href={encodeURI(`/dags/${items[i].dagId}/grid`)} wrap="yes">
-              {" "}
-              {items[i].dagId}{" "}
-            </Link>{" "}
-          </Text>
-
-          <Text>Started : {items[i].startDate} </Text>
-          {items[i].endDate && <Text>Ended : {items[i].endDate} </Text>}
-          <Text>
-            Duration :{" "}
-            {formatDuration(getDuration(items[i].startDate, items[i].endDate))}{" "}
-          </Text>
-        </CardBody>
-      </Card>
-    );
-  }
 
   return (
     <Box>
@@ -190,7 +169,7 @@ function TaskInstanceStatus(state, items) {
                   animate={{ opacity: 1, y: "10%" }}
                   exit={{ opacity: 0, x: "10%" }}
                   transition="0.5s linear"
-                  key={`${item.dagId}.${item.runId}.${item.taskId}`}
+                  key={`${item.dagId}.${item.runId}.${item.taskId}.${item.mapIndex}`}
                 >
                   <CardHeader mb={0} pb={0}>
                     <Text>
@@ -239,8 +218,97 @@ function TaskInstanceStatus(state, items) {
   );
 }
 
+function DagRunStatus(state, items) {
+  let rows = [];
+  let color = stateColors.running;
+
+  if (state === "failed") {
+    color = stateColors.failed;
+  } else if (state === "success") {
+    color = stateColors.success;
+  }
+
+  if (items === undefined) {
+    items = [];
+  }
+  const count = items.length;
+
+  return (
+    <Box>
+      <Center>
+        {" "}
+        <Text>
+          {" "}
+          {state} - {count}{" "}
+        </Text>{" "}
+      </Center>
+
+      <Box mt={2} height="90vh" overflowY="scroll">
+        <motion.div>
+          <AnimatePresence>
+            {items.map((item, index) => {
+              return (
+                <Card
+                  as={motion.div}
+                  borderLeftWidth="5px"
+                  borderLeftColor={color}
+                  margin="10px"
+                  size="md"
+                  enter={{ duration: 10 }}
+                  initial={{ opacity: 0, y: "-100%" }}
+                  animate={{ opacity: 1, y: "10%" }}
+                  exit={{ opacity: 0, x: "10%" }}
+                  transition="0.5s linear"
+                  key={`${item.dagId}.${item.runId}.${index}`}
+                >
+                  <CardHeader mb={0} pb={0}>
+                    <Text>
+                      <Link
+                        href={encodeURI(`/dags/${item.dagId}/grid`)}
+                        wrap="yes"
+                      >
+                        {" "}
+                        {item.dagId}{" "}
+                      </Link>{" "}
+                    </Text>
+                  </CardHeader>
+                  <CardBody>
+                    <Text>
+                      Run ID:{" "}
+                      <Link
+                        href={`/dags/${
+                          item.dagId
+                        }/grid?dag_run_id=${encodeURIComponent(item.runId)}`}
+                        wrap="yes"
+                      >
+                        {" "}
+                        {item.runId}{" "}
+                      </Link>{" "}
+                    </Text>
+
+                    <Text>Started : {item.startDate} </Text>
+                    {item.endDate && <Text>Ended : {item.endDate} </Text>}
+                    <Text>
+                      Duration :{" "}
+                      {formatDuration(
+                        getDuration(item.startDate, item.endDate)
+                      )}{" "}
+                    </Text>
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </AnimatePresence>
+        </motion.div>
+      </Box>
+    </Box>
+  );
+}
+
 function Dashboard() {
-  const { data, isError } = useDashboard();
+  const [duration, setDuration] = React.useState("8");
+
+  const { data, isError } = useDashboard(duration);
 
   if (data) {
     return (
@@ -254,8 +322,30 @@ function Dashboard() {
             Dashboard
           </Heading>
           <Spacer />
+          <RadioGroup
+            defaultValue="8"
+            pr={5}
+            onChange={setDuration}
+            value={duration}
+          >
+            <Stack spacing={5} direction="row">
+              <Radio colorScheme="green" value="1">
+                1 hour
+              </Radio>
+              <Radio colorScheme="green" value="8">
+                8 hours
+              </Radio>
+              <Radio colorScheme="green" value="24">
+                24 hours
+              </Radio>
+            </Stack>
+          </RadioGroup>
           <AutoRefresh />
         </Flex>
+
+        <Heading mt={3} mb={2} fontWeight="normal" size="lg">
+          Task Instances
+        </Heading>
 
         <SimpleGrid columns="4" spacing={5} width="100%">
           {TaskInstanceStatus("running", data["taskInstances"]["running"])}
@@ -264,7 +354,16 @@ function Dashboard() {
           {TaskInstanceStatus("failed", data["taskInstances"]["failed"])}
         </SimpleGrid>
 
-        {PlannedDagRun(data["dagRuns"])}
+        <Heading mt={3} mb={2} fontWeight="normal" size="lg">
+          Dag Runs
+        </Heading>
+
+        <SimpleGrid columns="4" spacing={5} width="100%" pb={5} mb={5}>
+          {PlannedDagRun(data["upcomingDagRuns"])}
+          {DagRunStatus("running", data["dagRunsCurrent"]["running"])}
+          {DagRunStatus("success", data["dagRunsCurrent"]["success"])}
+          {DagRunStatus("failed", data["dagRunsCurrent"]["failed"])}
+        </SimpleGrid>
 
         <Text m={2}>
           {" "}

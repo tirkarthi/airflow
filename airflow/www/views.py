@@ -1209,23 +1209,48 @@ class Airflow(AirflowBaseView):
     @expose("/dashboard_api")
     def dashboard_api(self):
         """Dashboard info API."""
+        duration = int(request.args.get('duration'))
         allowed_dag_ids = get_auth_manager().get_permitted_dag_ids(user=g.user)
+        dag_runs = []
 
         data = {
-            "dag_runs": [],
-            "task_instances": []
+            "upcoming_dag_runs": [],
+            "task_instances": [],
+            "dag_runs_current": {
+                "queued": [],
+                "running": [],
+                "success": [],
+                "failed": [],
+            }
         }
         tis = defaultdict(list)
         with create_session() as session:
-            dag_runs = (session.query(DagModel.dag_id,
-                                      DagModel.next_dagrun_create_after,
-                                      DagModel.timetable_description,
-                                      DagModel.schedule_interval)
-                        .filter(DagModel.next_dagrun_create_after.is_not(None),
-                                DagModel.is_paused.is_(False),
-                                DagModel.is_active.is_(True),
-                                DagModel.dag_id.in_(allowed_dag_ids))
-                        .order_by(desc(DagModel.next_dagrun_create_after)).limit(100).all())
+            unpaused_dag_ids = [dag_id for dag_id, in session.query(DagModel.dag_id).filter(DagModel.is_paused.is_(False),
+                                                                                            DagModel.is_active.is_(True),
+                                                                                            DagModel.dag_id.in_(allowed_dag_ids)).all()]
+            upcoming_dag_runs = (session.query(DagModel.dag_id,
+                                               DagModel.next_dagrun_create_after,
+                                               DagModel.timetable_description,
+                                               DagModel.schedule_interval)
+                                 .filter(DagModel.next_dagrun_create_after.is_not(None),
+                                         DagModel.is_paused.is_(False),
+                                         DagModel.is_active.is_(True),
+                                         DagModel.dag_id.in_(allowed_dag_ids))
+                                 .order_by(desc(DagModel.next_dagrun_create_after)).limit(100).all())
+
+            dag_runs_subquery = (session.query(DagRun.dag_id,
+                                               DagRun.start_date,
+                                               DagRun.end_date,
+                                               DagRun.run_id,
+                                               DagRun.state,
+                                               func.rank().over(
+                                                   order_by=(DagRun.end_date.desc(), DagRun.start_date.asc()),
+                                                   partition_by=DagRun.state
+                                               ).label('rnk')).filter(DagRun.dag_id.in_(unpaused_dag_ids)).subquery())
+
+            dag_runs_ = session.query(dag_runs_subquery).filter(
+                dag_runs_subquery.c.rnk <= 100, dag_runs_subquery.c.start_date >= timezone.utcnow() - datetime.timedelta(hours=duration)
+            ).all()
 
             # https://stackoverflow.com/a/40637646
             # Get top 100 rows in last 24 hours per state.
@@ -1235,21 +1260,32 @@ class Airflow(AirflowBaseView):
                                       TaskInstance.end_date,
                                       TaskInstance.state,
                                       TaskInstance.start_date,
+                                      TaskInstance.map_index,
                                       func.rank().over(
                                           order_by=(TaskInstance.end_date.desc(), TaskInstance.start_date.desc()),
                                           partition_by=TaskInstance.state
                                       ).label('rnk')).subquery())
 
             task_instances = session.query(subquery).filter(
-                subquery.c.rnk <= 100, subquery.c.start_date >= timezone.utcnow() - datetime.timedelta(hours=24),
+                subquery.c.rnk <= 100, subquery.c.start_date >= timezone.utcnow() - datetime.timedelta(hours=duration),
             ).all()
 
-        for dr in dag_runs:
-            data["dag_runs"].append(dict(dr))
+        for dr in upcoming_dag_runs:
+            dict_ = dict(dr)
+
+            if isinstance(dict_.get("schedule_interval"), datetime.timedelta):
+                dict_["schedule_interval"] = f"Every {dr.schedule_interval}"
+
+            data["upcoming_dag_runs"].append(dict_)
 
         for ti in task_instances:
             tis[ti.state].append(dict(ti))
 
+        for dr_ in dag_runs_:
+            data["dag_runs_current"][dr_.state].append(dict(dr_))
+
+        # For running dag runs sort by recently started ones
+        data["dag_runs_current"]["running"].sort(key=lambda x: x["start_date"], reverse=True)
 
         data["task_instances"] = tis
         return flask.json.jsonify(data)
