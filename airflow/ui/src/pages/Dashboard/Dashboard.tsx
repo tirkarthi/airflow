@@ -16,23 +16,56 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, Heading, Button } from "@chakra-ui/react";
+import { useTour } from "@reactour/tour";
+import { useEffect, useState } from "react";
+import Joyride from "react-joyride";
 
 import { Health } from "./Health";
 import { HistoricalMetrics } from "./HistoricalMetrics";
 import { Stats } from "./Stats";
 
-export const Dashboard = () => (
-  <Box>
-    <Heading mb={4}>Welcome</Heading>
+const steps_ = [
+  {
+    target: ".health-section",
+    content: "Shows the health of the Airflow cluster.",
+    disableBeacon: true,
+    showProgress: true,
+    disableScrolling: true,
+  },
+  {
+    target: ".historical-metrics-section",
+    content: "Shows the historical metrics of the Airflow cluster.",
+    disableBeacon: true,
+    showProgress: true,
+    disableScrolling: true,
+  },
+];
+
+export const Dashboard = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [steps, setSteps] = useState([]);
+
+  useEffect(() => setSteps(steps_));
+
+  return (
     <Box>
-      <Health />
+      <Joyride steps={steps} run={isOpen} continuous={true} />
+      <Heading mb={4}>Welcome</Heading>
+      <Button
+        mb={4}
+        onClick={() => {
+          setIsOpen(true);
+        }}
+      >
+        Start Tour
+      </Button>
+      <Box>
+        <Health />
+      </Box>
+      <Box mt={5}>
+        <HistoricalMetrics />
+      </Box>
     </Box>
-    <Box mt={5}>
-      <Stats />
-    </Box>
-    <Box mt={5}>
-      <HistoricalMetrics />
-    </Box>
-  </Box>
-);
+  );
+};

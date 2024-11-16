@@ -26,7 +26,8 @@ import {
   Box,
 } from "@chakra-ui/react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import Joyride from "react-joyride";
 import { Link as RouterLink, useSearchParams } from "react-router-dom";
 import { useLocalStorage } from "usehooks-ts";
 
@@ -52,6 +53,16 @@ import { DagTags } from "./DagTags";
 import { DagsFilters } from "./DagsFilters";
 import { Schedule } from "./Schedule";
 import { SortSelect } from "./SortSelect";
+
+const steps_ = [
+  {
+    target: ".filter-section",
+    content: "Filter dags by last dagrun state.",
+    disableBeacon: true,
+    showProgress: true,
+    disableScrolling: true,
+  },
+];
 
 const columns: Array<ColumnDef<DAGWithLatestDagRunsResponse>> = [
   {
@@ -145,6 +156,11 @@ const cardDef: CardDef<DAGWithLatestDagRunsResponse> = {
 const DAGS_LIST_DISPLAY = "dags_list_display";
 
 export const DagsList = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [steps, setSteps] = useState([]);
+
+  useEffect(() => setSteps(steps_));
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [display, setDisplay] = useLocalStorage<"card" | "table">(DAGS_LIST_DISPLAY, "card");
 
@@ -215,7 +231,8 @@ export const DagsList = () => {
   );
 
   return (
-    <DagsLayout>
+    <>
+      <Joyride steps={steps_} run={isOpen} continuous={true} />
       <VStack alignItems="none">
         <SearchBar
           buttonProps={{ disabled: true }}

@@ -51,7 +51,7 @@ export const HistoricalMetrics = () => {
     : 0;
 
   return (
-    <Box width="100%">
+    <Box width="100%" className="historical-metrics-section">
       <ErrorAlert error={error} />
       <VStack alignItems="left" gap={2}>
         <TimeRangeSelector

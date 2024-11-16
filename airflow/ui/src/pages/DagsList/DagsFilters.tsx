@@ -145,8 +145,12 @@ export const DagsFilters = () => {
   return (
     <HStack justifyContent="space-between">
       <HStack gap={4}>
-        <HStack>
-          <QuickFilterButton isActive={isAll} onClick={handleStateChange} value="all">
+        <HStack className="filter-section">
+          <QuickFilterButton
+            isActive={isAll}
+            onClick={handleStateChange}
+            value="all"
+          >
             All
           </QuickFilterButton>
           <QuickFilterButton
