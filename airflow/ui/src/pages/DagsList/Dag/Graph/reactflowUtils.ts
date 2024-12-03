@@ -67,7 +67,7 @@ export const flattenGraph = ({
         x,
         y,
       },
-      type: node.type,
+      type: "task",
       ...parentNode,
     } satisfies NodeType;
 

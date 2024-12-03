@@ -19,7 +19,8 @@
 import { useQuery } from "@tanstack/react-query";
 import ELK, { type ElkNode, type ElkExtendedEdge, type ElkShape } from "elkjs";
 
-import type { Edge, Node } from "./data";
+import type { Node } from "./data";
+import type { EdgeResponse, NodeResponse, NodeValueResponse } from "openapi/requests/types.gen";
 import { flattenGraph, formatFlowEdges } from "./reactflowUtils";
 
 type EdgeLabel = {
@@ -33,15 +34,15 @@ type FormattedNode = {
   childCount?: number;
   edges?: Array<FormattedEdge>;
   isGroup: boolean;
-  isMapped?: boolean;
+  isMapped?: boolean | null;
   isOpen?: boolean;
-  setupTeardownType?: Node["setup_teardown_type"];
+  setupTeardownType?: Node["setup_teardown_type"] | null;
 } & ElkShape &
-  Node;
+  NodeValueResponse;
 
 type FormattedEdge = {
   id: string;
-  isSetupTeardown?: boolean;
+  isSetupTeardown?: boolean | null;
   labels?: Array<EdgeLabel>;
   parentNode?: string;
 } & ElkExtendedEdge;
@@ -76,15 +77,15 @@ const getDirection = (arrange: string) => {
 };
 
 const formatElkEdge = (
-  edge: Edge,
+  edge: EdgeResponse,
   font: string,
-  node?: Node,
+  node?: NodeResponse,
 ): FormattedEdge => ({
   id: `${edge.source_id}-${edge.target_id}`,
   isSetupTeardown: edge.is_setup_teardown,
   // isSourceAsset: e.isSourceAsset,
   labels:
-    edge.label === undefined
+    edge.label === null
       ? []
       : [
           {
@@ -94,7 +95,7 @@ const formatElkEdge = (
             width: getTextWidth(edge.label, font),
           },
         ],
-  parentNode: node?.id,
+  parentNode: node?.id ?? "",
   sources: [edge.source_id],
   targets: [edge.target_id],
 });
@@ -116,9 +117,9 @@ const getNestedChildIds = (children: Array<Node>) => {
 
 type GenerateElkProps = {
   arrange: string;
-  edges: Array<Edge>;
+  edges: Array<EdgeResponse>;
   font: string;
-  nodes: Array<Node>;
+  nodes: NodeResponse;
   openGroupIds?: Array<string>;
 };
 
@@ -132,15 +133,15 @@ const generateElkGraph = ({
   const closedGroupIds: Array<string> = [];
   let filteredEdges = unformattedEdges;
 
-  const formatChildNode = (node: Node): FormattedNode => {
+  const formatChildNode = (node: NodeResponse): FormattedNode => {
     const isOpen = openGroupIds?.includes(node.id);
 
     const childCount =
       node.children?.filter((child) => child.type !== "join").length ?? 0;
     const childIds =
-      node.children === undefined ? [] : getNestedChildIds(node.children);
+      node.children === null ? [] : getNestedChildIds(node.children);
 
-    if (isOpen && node.children !== undefined) {
+    if (isOpen && node.children !== null) {
       return {
         ...node,
         childCount,
@@ -169,7 +170,7 @@ const generateElkGraph = ({
         id: node.id,
         isGroup: true,
         isOpen,
-        label: node.label,
+        label: node.value.label,
         layoutOptions: {
           "elk.padding": "[top=80,left=15,bottom=15,right=15]",
         },
@@ -194,33 +195,36 @@ const generateElkGraph = ({
       closedGroupIds.push(node.id);
     }
 
-    const label = node.is_mapped ? `${node.label} [100]` : node.label;
+    const label = node.value.isMapped
+      ? `${node.value.label} [100]`
+      : node.value.label;
     const labelLength = getTextWidth(label, font);
-    let width = labelLength > 200 ? labelLength : 200;
-    let height = 80;
+    const width = labelLength > 200 ? labelLength : 200;
+    const height = 80;
 
-    if (node.type === "join") {
-      width = 10;
-      height = 10;
-    } else if (node.type === "asset_condition") {
-      width = 30;
-      height = 30;
-    }
+    // TODO: Fix after node.type is present
+    // if (node.type === "join") {
+    //   width = 10;
+    //   height = 10;
+    // } else if (node.type === "asset_condition") {
+    //   width = 30;
+    //   height = 30;
+    // }
 
     return {
       childCount,
       height,
       id: node.id,
       isGroup: Boolean(node.children),
-      isMapped: node.is_mapped,
-      label: node.label,
-      setupTeardownType: node.setup_teardown_type,
-      type: node.type,
+      isMapped: node.value.isMapped,
+      label: node.value.label,
+      setupTeardownType: node.value.setupTeardownType,
+      type: "task",
       width,
     };
   };
 
-  const children = nodes.map(formatChildNode);
+  const children = nodes.children?.map(formatChildNode);
 
   const edges = filteredEdges.map((fe) => formatElkEdge(fe, font));
 
@@ -239,8 +243,8 @@ const generateElkGraph = ({
 
 type LayoutProps = {
   arrange?: string;
-  edges: Array<Edge>;
-  nodes: Array<Node>;
+  edges: Array<EdgeResponse>;
+  nodes: NodeResponse;
   openGroupIds: Array<string>;
 };
 
@@ -251,6 +255,7 @@ export const useGraphLayout = ({
   openGroupIds = [],
 }: LayoutProps) =>
   useQuery({
+    enabled: Boolean(nodes),
     queryFn: async () => {
       const font = `bold 16px ${
         globalThis.getComputedStyle(document.body).fontFamily
@@ -265,7 +270,6 @@ export const useGraphLayout = ({
         nodes,
         openGroupIds,
       });
-
       // 2. use elk to generate the size and position of nodes and edges
       const data = (await elk.layout(graph)) as LayoutNode;
 
@@ -284,5 +288,5 @@ export const useGraphLayout = ({
 
       return { edges: formattedEdges, nodes: flattenedData.nodes };
     },
-    queryKey: ["graphLayout", nodes.length, openGroupIds, arrange],
+    queryKey: ["graphLayout", nodes?.children?.length, openGroupIds, arrange],
   });

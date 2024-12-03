@@ -28,7 +28,7 @@ export type Node = {
   children?: Array<Node>;
   id: string;
   is_mapped?: boolean;
-  label: string;
+  label?: string;
   setup_teardown_type?: "setup" | "teardown";
   tooltip?: string;
   type:

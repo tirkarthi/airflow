@@ -19,14 +19,15 @@
 import { Flex } from "@chakra-ui/react";
 import { ReactFlow, Controls, Background, MiniMap } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { useParams } from "react-router-dom";
 
+import { useGraphServiceGraphData } from "openapi/queries";
 import { useColorMode } from "src/context/colorMode";
 import { useOpenGroups } from "src/context/openGroups";
 
 import Edge from "./Edge";
 import { JoinNode } from "./JoinNode";
 import { TaskNode } from "./TaskNode";
-import { graphData } from "./data";
 import { useGraphLayout } from "./useGraphLayout";
 
 const nodeTypes = {
@@ -36,11 +37,24 @@ const nodeTypes = {
 const edgeTypes = { custom: Edge };
 
 export const Graph = () => {
+  const { dagId } = useParams();
+  const {
+    data: graphData,
+  } = useGraphServiceGraphData({
+    dagId: dagId ?? "",
+  });
+
   const { colorMode } = useColorMode();
 
   const { openGroupIds } = useOpenGroups();
   const { data } = useGraphLayout({
-    ...graphData,
+    edges: [...(graphData?.edges ?? [])],
+    nodes: graphData?.nodes
+      ? {
+          ...graphData.nodes,
+          children: [...(graphData.nodes.children ?? [])],
+        }
+      : [],
     openGroupIds,
   });
 
