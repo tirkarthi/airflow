@@ -23,6 +23,7 @@ import {
   ProviderService,
   StructureService,
   TaskInstanceService,
+  TaskInstancesService,
   TaskService,
   VariableService,
   VersionService,
@@ -445,6 +446,32 @@ export const prefetchUseStructureServiceStructureData = (
         includeUpstream,
         root,
       }),
+  });
+/**
+ * Recent Task Instances
+ * Get recent task instances for a dag.
+ * @param data The data for the request.
+ * @param data.dagId
+ * @param data.state
+ * @returns TaskInstanceDurationCollectionResponse Successful Response
+ * @throws ApiError
+ */
+export const prefetchUseTaskInstancesServiceRecentTaskInstances = (
+  queryClient: QueryClient,
+  {
+    dagId,
+    state,
+  }: {
+    dagId: string;
+    state?: string;
+  },
+) =>
+  queryClient.prefetchQuery({
+    queryKey: Common.UseTaskInstancesServiceRecentTaskInstancesKeyFn({
+      dagId,
+      state,
+    }),
+    queryFn: () => TaskInstancesService.recentTaskInstances({ dagId, state }),
   });
 /**
  * List Backfills

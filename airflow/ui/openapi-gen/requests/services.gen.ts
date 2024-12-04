@@ -36,6 +36,8 @@ import type {
   HistoricalMetricsResponse,
   StructureDataData,
   StructureDataResponse2,
+  RecentTaskInstancesData,
+  RecentTaskInstancesResponse,
   ListBackfillsData,
   ListBackfillsResponse,
   CreateBackfillData,
@@ -691,6 +693,33 @@ export class StructureService {
       },
       errors: {
         404: "Not Found",
+        422: "Validation Error",
+      },
+    });
+  }
+}
+
+export class TaskInstancesService {
+  /**
+   * Recent Task Instances
+   * Get recent task instances for a dag.
+   * @param data The data for the request.
+   * @param data.dagId
+   * @param data.state
+   * @returns TaskInstanceDurationCollectionResponse Successful Response
+   * @throws ApiError
+   */
+  public static recentTaskInstances(
+    data: RecentTaskInstancesData,
+  ): CancelablePromise<RecentTaskInstancesResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/ui/task_instances/recent_task_instances",
+      query: {
+        dag_id: data.dagId,
+        state: data.state,
+      },
+      errors: {
         422: "Validation Error",
       },
     });

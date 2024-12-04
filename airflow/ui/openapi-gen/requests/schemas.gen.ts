@@ -3785,6 +3785,75 @@ export const $TaskInstanceCollectionResponse = {
   description: "Task Instance Collection serializer for responses.",
 } as const;
 
+export const $TaskInstanceDurationCollectionResponse = {
+  properties: {
+    task_instances: {
+      items: {
+        $ref: "#/components/schemas/TaskInstanceDurationResponse",
+      },
+      type: "array",
+      title: "Task Instances",
+    },
+    total_entries: {
+      type: "integer",
+      title: "Total Entries",
+    },
+  },
+  type: "object",
+  required: ["task_instances", "total_entries"],
+  title: "TaskInstanceDurationCollectionResponse",
+  description:
+    "Task Instance Duration Reference collection serializer for responses.",
+} as const;
+
+export const $TaskInstanceDurationResponse = {
+  properties: {
+    dag_id: {
+      type: "string",
+      title: "Dag Id",
+    },
+    task_id: {
+      type: "string",
+      title: "Task Id",
+    },
+    state: {
+      anyOf: [
+        {
+          $ref: "#/components/schemas/TaskInstanceState",
+        },
+        {
+          type: "null",
+        },
+      ],
+    },
+    try_number: {
+      type: "integer",
+      title: "Try Number",
+    },
+    start_date: {
+      type: "string",
+      format: "date-time",
+      title: "Start Date",
+    },
+    end_date: {
+      type: "string",
+      format: "date-time",
+      title: "End Date",
+    },
+  },
+  type: "object",
+  required: [
+    "dag_id",
+    "task_id",
+    "state",
+    "try_number",
+    "start_date",
+    "end_date",
+  ],
+  title: "TaskInstanceDurationResponse",
+  description: "Task Instance Duration Reference serializer for responses.",
+} as const;
+
 export const $TaskInstanceHistoryCollectionResponse = {
   properties: {
     task_instances: {
@@ -5019,7 +5088,7 @@ export const $TimeDelta = {
   properties: {
     __type: {
       type: "string",
-      title: "Type",
+      title: "  Type",
       default: "TimeDelta",
     },
     days: {

@@ -953,6 +953,26 @@ export type TaskInstanceCollectionResponse = {
 };
 
 /**
+ * Task Instance Duration Reference collection serializer for responses.
+ */
+export type TaskInstanceDurationCollectionResponse = {
+  task_instances: Array<TaskInstanceDurationResponse>;
+  total_entries: number;
+};
+
+/**
+ * Task Instance Duration Reference serializer for responses.
+ */
+export type TaskInstanceDurationResponse = {
+  dag_id: string;
+  task_id: string;
+  state: TaskInstanceState | null;
+  try_number: number;
+  start_date: string;
+  end_date: string;
+};
+
+/**
  * TaskInstanceHistory Collection serializer for responses.
  */
 export type TaskInstanceHistoryCollectionResponse = {
@@ -1424,6 +1444,14 @@ export type StructureDataData = {
 };
 
 export type StructureDataResponse2 = StructureDataResponse;
+
+export type RecentTaskInstancesData = {
+  dagId: string;
+  state?: string | null;
+};
+
+export type RecentTaskInstancesResponse =
+  TaskInstanceDurationCollectionResponse;
 
 export type ListBackfillsData = {
   dagId: string;
@@ -2459,6 +2487,21 @@ export type $OpenApiTs = {
          * Not Found
          */
         404: HTTPExceptionResponse;
+        /**
+         * Validation Error
+         */
+        422: HTTPValidationError;
+      };
+    };
+  };
+  "/ui/task_instances/recent_task_instances": {
+    get: {
+      req: RecentTaskInstancesData;
+      res: {
+        /**
+         * Successful Response
+         */
+        200: TaskInstanceDurationCollectionResponse;
         /**
          * Validation Error
          */

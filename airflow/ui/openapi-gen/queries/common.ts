@@ -24,6 +24,7 @@ import {
   ProviderService,
   StructureService,
   TaskInstanceService,
+  TaskInstancesService,
   TaskService,
   VariableService,
   VersionService,
@@ -352,6 +353,28 @@ export const UseStructureServiceStructureDataKeyFn = (
 ) => [
   useStructureServiceStructureDataKey,
   ...(queryKey ?? [{ dagId, includeDownstream, includeUpstream, root }]),
+];
+export type TaskInstancesServiceRecentTaskInstancesDefaultResponse = Awaited<
+  ReturnType<typeof TaskInstancesService.recentTaskInstances>
+>;
+export type TaskInstancesServiceRecentTaskInstancesQueryResult<
+  TData = TaskInstancesServiceRecentTaskInstancesDefaultResponse,
+  TError = unknown,
+> = UseQueryResult<TData, TError>;
+export const useTaskInstancesServiceRecentTaskInstancesKey =
+  "TaskInstancesServiceRecentTaskInstances";
+export const UseTaskInstancesServiceRecentTaskInstancesKeyFn = (
+  {
+    dagId,
+    state,
+  }: {
+    dagId: string;
+    state?: string;
+  },
+  queryKey?: Array<unknown>,
+) => [
+  useTaskInstancesServiceRecentTaskInstancesKey,
+  ...(queryKey ?? [{ dagId, state }]),
 ];
 export type BackfillServiceListBackfillsDefaultResponse = Awaited<
   ReturnType<typeof BackfillService.listBackfills>

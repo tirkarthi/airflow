@@ -29,6 +29,7 @@ import {
   ProviderService,
   StructureService,
   TaskInstanceService,
+  TaskInstancesService,
   TaskService,
   VariableService,
   VersionService,
@@ -564,6 +565,39 @@ export const useStructureServiceStructureData = <
         includeUpstream,
         root,
       }) as TData,
+    ...options,
+  });
+/**
+ * Recent Task Instances
+ * Get recent task instances for a dag.
+ * @param data The data for the request.
+ * @param data.dagId
+ * @param data.state
+ * @returns TaskInstanceDurationCollectionResponse Successful Response
+ * @throws ApiError
+ */
+export const useTaskInstancesServiceRecentTaskInstances = <
+  TData = Common.TaskInstancesServiceRecentTaskInstancesDefaultResponse,
+  TError = unknown,
+  TQueryKey extends Array<unknown> = unknown[],
+>(
+  {
+    dagId,
+    state,
+  }: {
+    dagId: string;
+    state?: string;
+  },
+  queryKey?: TQueryKey,
+  options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">,
+) =>
+  useQuery<TData, TError>({
+    queryKey: Common.UseTaskInstancesServiceRecentTaskInstancesKeyFn(
+      { dagId, state },
+      queryKey,
+    ),
+    queryFn: () =>
+      TaskInstancesService.recentTaskInstances({ dagId, state }) as TData,
     ...options,
   });
 /**

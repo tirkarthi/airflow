@@ -235,3 +235,21 @@ class TaskInstanceReferenceCollectionResponse(BaseModel):
 
     task_instances: list[TaskInstanceReferenceResponse]
     total_entries: int
+
+
+class TaskInstanceDurationResponse(BaseModel):
+    """Task Instance Duration Reference serializer for responses."""
+
+    dag_id: str
+    task_id: str
+    state: TaskInstanceState | None
+    try_number: int
+    start_date: datetime
+    end_date: datetime
+
+
+class TaskInstanceDurationCollectionResponse(BaseModel):
+    """Task Instance Duration Reference collection serializer for responses."""
+
+    task_instances: list[TaskInstanceDurationResponse]
+    total_entries: int
