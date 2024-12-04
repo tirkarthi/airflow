@@ -26,6 +26,7 @@ from airflow.api_fastapi.common.db.common import (
 from airflow.api_fastapi.common.router import AirflowRouter
 from airflow.api_fastapi.core_api.datamodels.task_instances import TaskInstanceDurationCollectionResponse
 from airflow.models import TaskInstance
+from airflow.utils.state import TaskInstanceState
 
 task_instances_router = AirflowRouter(prefix="/task_instances", tags=["Task Instances"])
 
@@ -36,7 +37,7 @@ task_instances_router = AirflowRouter(prefix="/task_instances", tags=["Task Inst
 def recent_task_instances(
     dag_id: str,
     session: SessionDep,
-    state: str | None = None,
+    state: TaskInstanceState | None = None,
 ) -> TaskInstanceDurationCollectionResponse:
     """Get recent task instances for a dag."""
     task_instances_limit = 14

@@ -1447,7 +1447,7 @@ export type StructureDataResponse2 = StructureDataResponse;
 
 export type RecentTaskInstancesData = {
   dagId: string;
-  state?: string | null;
+  state?: TaskInstanceState | null;
 };
 
 export type RecentTaskInstancesResponse =

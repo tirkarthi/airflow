@@ -30,7 +30,11 @@ import {
   VersionService,
   XcomService,
 } from "../requests/services.gen";
-import { DagRunState, DagWarningType } from "../requests/types.gen";
+import {
+  DagRunState,
+  DagWarningType,
+  TaskInstanceState,
+} from "../requests/types.gen";
 
 export type AssetServiceNextRunAssetsDefaultResponse = Awaited<
   ReturnType<typeof AssetService.nextRunAssets>
@@ -369,7 +373,7 @@ export const UseTaskInstancesServiceRecentTaskInstancesKeyFn = (
     state,
   }: {
     dagId: string;
-    state?: string;
+    state?: TaskInstanceState;
   },
   queryKey?: Array<unknown>,
 ) => [

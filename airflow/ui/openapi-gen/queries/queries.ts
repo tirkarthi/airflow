@@ -51,6 +51,7 @@ import {
   PoolPatchBody,
   PoolPostBody,
   PoolPostBulkBody,
+  TaskInstanceState,
   TaskInstancesBatchBody,
   TriggerDAGRunPostBody,
   VariableBody,
@@ -586,7 +587,7 @@ export const useTaskInstancesServiceRecentTaskInstances = <
     state,
   }: {
     dagId: string;
-    state?: string;
+    state?: TaskInstanceState;
   },
   queryKey?: TQueryKey,
   options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">,
