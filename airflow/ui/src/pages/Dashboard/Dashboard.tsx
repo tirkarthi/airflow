@@ -20,6 +20,7 @@ import { Box, Heading } from "@chakra-ui/react";
 
 import { Health } from "./Health";
 import { HistoricalMetrics } from "./HistoricalMetrics";
+import { RecentDags } from "./RecentDags";
 import { Stats } from "./Stats";
 
 export const Dashboard = () => (
@@ -30,6 +31,9 @@ export const Dashboard = () => (
     </Box>
     <Box mt={5}>
       <Stats />
+    </Box>
+    <Box mt={5}>
+      <RecentDags />
     </Box>
     <Box mt={5}>
       <HistoricalMetrics />

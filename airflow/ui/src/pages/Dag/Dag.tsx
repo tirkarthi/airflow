@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import {
@@ -35,6 +36,8 @@ const tabs = [
 ];
 
 export const Dag = () => {
+  const RecentlyViewedDagsKey = "RecentlyViewedDags";
+
   const { dagId = "" } = useParams();
 
   const {
@@ -43,6 +46,27 @@ export const Dag = () => {
     isLoading,
   } = useDagServiceGetDagDetails({
     dagId,
+  });
+
+  useEffect(() => {
+    let RecentlyViewedDags = JSON.parse(
+      localStorage.getItem(RecentlyViewedDagsKey),
+    );
+
+    if (!RecentlyViewedDags) {
+      RecentlyViewedDags = [dagId];
+    } else {
+      RecentlyViewedDags = RecentlyViewedDags.filter(
+        (dagIdPresent) => dagIdPresent !== dagId,
+      );
+      RecentlyViewedDags.unshift(dagId);
+    }
+
+    RecentlyViewedDags = RecentlyViewedDags.slice(-5);
+    localStorage.setItem(
+      RecentlyViewedDagsKey,
+      JSON.stringify(RecentlyViewedDags),
+    );
   });
 
   // TODO: replace with with a list dag runs by dag id request
