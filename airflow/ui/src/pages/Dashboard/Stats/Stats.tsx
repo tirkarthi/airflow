@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Box, Flex, Heading, HStack } from "@chakra-ui/react";
+import { Box, Flex, Heading, Stack } from "@chakra-ui/react";
 import { FiClipboard } from "react-icons/fi";
 
 import { stateColor } from "src/utils/stateColor";
@@ -32,7 +32,7 @@ export const Stats = () => (
         Stats
       </Heading>
     </Flex>
-    <HStack>
+    <Stack direction={{ base: "column", md: "row" }}>
       <DagFilterButton
         badgeColor={stateColor.failed}
         filter="failed"
@@ -49,6 +49,6 @@ export const Stats = () => (
         filter="active"
         link="dags?paused=false"
       />
-    </HStack>
+    </Stack>
   </Box>
 );

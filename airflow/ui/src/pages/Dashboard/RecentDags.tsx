@@ -16,67 +16,72 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Box, Heading, Flex, HStack, VStack, Text } from "@chakra-ui/react";
-import { FiClipboard } from "react-icons/fi";
+import {
+  Box,
+  Heading,
+  Flex,
+  Stack,
+  VStack,
+  Text,
+  Skeleton,
+} from "@chakra-ui/react";
+import { FiClock } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 import { useDagsServiceRecentDagRuns } from "openapi/queries";
 import { RecentRuns } from "src/pages/DagsList/RecentRuns";
 
-const RecentDagsList = [
-  "example_complex",
-  "example_task_group",
-  "example_branch_datetime_operator",
-  "tutorial",
-  "example_xcom",
-  "example_complex",
-];
-
-const RecentDag = ({ dagId }: { dagId: string }) => {
+const RecentDag = ({ dagId }: { readonly dagId: string }) => {
   const { data, isLoading } = useDagsServiceRecentDagRuns({ dagIds: [dagId] });
 
-  if (!isLoading) {
-    return (
-      <VStack width={400}>
-        <Flex width="full" flexDirection="row-reverse">
-          <RecentRuns latestRuns={data?.dags[0].latest_dag_runs} />
-        </Flex>
-        <Box
-          backgroundColor="bg.info"
-          color="fg.info"
-          width="full"
-          px={2}
-          py={1}
-          pr={50}
-          borderRadius={5}
-        >
-          {dagId}
-        </Box>
-      </VStack>
-    );
-  } else {
-    return <>loading</>;
-  }
+  return isLoading ? (
+    <Skeleton height={100} width={400} />
+  ) : (
+    <VStack
+      borderColor="border.emphasized"
+      borderRadius={5}
+      borderWidth={1}
+      width="full"
+    >
+      <Flex flexDirection="row-reverse" mr={2} mt={2} width="full">
+        <RecentRuns latestRuns={data?.dags[0]?.latest_dag_runs ?? []} />
+      </Flex>
+      <Box
+        backgroundColor="bg.info"
+        borderRadius={5}
+        pl={2}
+        py={2}
+        width="full"
+      >
+        <Link to={`/dags/${dagId}`}>
+          <Text color="fg.info" truncate>
+            {dagId}
+          </Text>
+        </Link>
+      </Box>
+    </VStack>
+  );
 };
 
 export const RecentDags = () => {
   const RecentlyViewedDagsKey = "RecentlyViewedDags";
-  let RecentlyViewedDags = JSON.parse(
-    localStorage.getItem(RecentlyViewedDagsKey),
-  );
+  const RecentlyViewedDags: Array<string> = JSON.parse(
+    localStorage.getItem(RecentlyViewedDagsKey) ?? "",
+  ) as Array<string>;
 
   return (
     <Box>
       <Flex color="fg.muted" my={2}>
-        <FiClipboard />
+        <FiClock />
         <Heading ml={1} size="xs">
           Recently Viewed Dags
         </Heading>
       </Flex>
-      <HStack>
-        {RecentlyViewedDags.map((dag) => (
-          <RecentDag dagId={dag} />
+      <Stack direction={{ base: "column", md: "row" }} mr={2}>
+        {RecentlyViewedDags.map((dagId) => (
+          <RecentDag dagId={dagId} key={dagId} />
         ))}
-      </HStack>
+      </Stack>
     </Box>
   );
 };

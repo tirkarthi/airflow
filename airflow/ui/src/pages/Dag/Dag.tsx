@@ -49,17 +49,17 @@ export const Dag = () => {
   });
 
   useEffect(() => {
-    let RecentlyViewedDags = JSON.parse(
-      localStorage.getItem(RecentlyViewedDagsKey),
-    );
+    let RecentlyViewedDags: Array<string> = JSON.parse(
+      localStorage.getItem(RecentlyViewedDagsKey) ?? "",
+    ) as Array<string>;
 
-    if (!RecentlyViewedDags) {
-      RecentlyViewedDags = [dagId];
-    } else {
+    if (RecentlyViewedDags.length > 0) {
       RecentlyViewedDags = RecentlyViewedDags.filter(
-        (dagIdPresent) => dagIdPresent !== dagId,
+        (dagIdPresent: string) => dagIdPresent !== dagId,
       );
       RecentlyViewedDags.unshift(dagId);
+    } else {
+      RecentlyViewedDags = [dagId];
     }
 
     RecentlyViewedDags = RecentlyViewedDags.slice(-5);
