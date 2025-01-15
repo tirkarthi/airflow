@@ -25,10 +25,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import { UseDagServiceGetDagsKeyFn } from "openapi/queries";
-import { DagService } from "openapi/requests/services.gen";
+import { DagsService } from "openapi/requests/services.gen";
 import type { DAGCollectionResponse, DAGResponse } from "openapi/requests/types.gen";
 
 import { DropdownIndicator } from "./SearchDagsDropdownIndicator";
+import { Option } from "./SearchDagsOption";
 
 export type Option = {
   label: string;
@@ -57,13 +58,15 @@ export const SearchDags = ({
   ): Promise<OptionsOrGroups<Option, GroupBase<Option>>> =>
     queryClient.fetchQuery({
       queryFn: () =>
-        DagService.getDags({
+        DagsService.recentDagRuns({
           dagDisplayNamePattern: inputValue,
           limit: SEARCH_LIMIT,
+          dagRunsLimit: 1,
         }).then((data: DAGCollectionResponse) => {
           const options = data.dags.map((dag: DAGResponse) => ({
             label: dag.dag_display_name || dag.dag_id,
             value: dag.dag_id,
+            lastDagRunState: dag.latest_dag_runs.length > 0 ? dag.latest_dag_runs[0].state : undefined,
           }));
 
           callback(options);
@@ -82,7 +85,7 @@ export const SearchDags = ({
     <Field.Root>
       <AsyncSelect
         backspaceRemovesValue={true}
-        components={{ DropdownIndicator }}
+        components={{ DropdownIndicator, Option }}
         defaultOptions
         filterOption={undefined}
         loadOptions={searchDagDebounced}
