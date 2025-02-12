@@ -59,7 +59,6 @@ axios.interceptors.request.use((config) => {
 });
 
 createRoot(document.querySelector("#root") as HTMLDivElement).render(
-  <StrictMode>
     <ChakraProvider value={system}>
       <ColorModeProvider>
         <QueryClientProvider client={queryClient}>
@@ -69,5 +68,4 @@ createRoot(document.querySelector("#root") as HTMLDivElement).render(
         </QueryClientProvider>
       </ColorModeProvider>
     </ChakraProvider>
-  </StrictMode>,
 );

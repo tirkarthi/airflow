@@ -53,6 +53,9 @@ importers:
       chart.js:
         specifier: ^4.4.6
         version: 4.4.6
+      chartjs-adapter-dayjs-4:
+        specifier: ^1.0.4
+        version: 1.0.4(chart.js@4.4.6)(dayjs@1.11.13)
       chartjs-plugin-annotation:
         specifier: ^3.1.0
         version: 3.1.0(chart.js@4.4.6)
@@ -1848,6 +1851,13 @@ packages:
   chart.js@4.4.6:
     resolution: {integrity: sha512-8Y406zevUPbbIBA/HRk33khEmQPk5+cxeflWE/2rx1NJsjVWMPw/9mSP9rxHP5eqi6LNoPBVMfZHxbwLSgldYA==}
     engines: {pnpm: '>=8'}
+
+  chartjs-adapter-dayjs-4@1.0.4:
+    resolution: {integrity: sha512-yy9BAYW4aNzPVrCWZetbILegTRb7HokhgospPoC3b5iZ5qdlqNmXts2KdSp6AqnjkPAp/YWyHDxLvIvwt5x81w==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      chart.js: '>=4.0.1'
+      dayjs: ^1.9.7
 
   chartjs-plugin-annotation@3.1.0:
     resolution: {integrity: sha512-EkAed6/ycXD/7n0ShrlT1T2Hm3acnbFhgkIEJLa0X+M6S16x0zwj1Fv4suv/2bwayCT3jGPdAtI9uLcAMToaQQ==}
@@ -6552,6 +6562,11 @@ snapshots:
   chart.js@4.4.6:
     dependencies:
       '@kurkle/color': 0.3.2
+
+  chartjs-adapter-dayjs-4@1.0.4(chart.js@4.4.6)(dayjs@1.11.13):
+    dependencies:
+      chart.js: 4.4.6
+      dayjs: 1.11.13
 
   chartjs-plugin-annotation@3.1.0(chart.js@4.4.6):
     dependencies:
