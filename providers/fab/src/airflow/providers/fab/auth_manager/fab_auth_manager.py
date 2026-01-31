@@ -323,6 +323,10 @@ class FabAuthManager(BaseAuthManager[User]):
     ) -> bool:
         return self._is_authorized(method=method, resource_type=RESOURCE_CONNECTION, user=user)
 
+    @cachedmethod(
+        lambda self: self.cache,
+        key=lambda _, method, user, access_entity, details: (method, user, access_entity, details),
+    )
     def is_authorized_dag(
         self,
         *,
@@ -473,6 +477,7 @@ class FabAuthManager(BaseAuthManager[User]):
         return set(rows)
 
     @provide_session
+    @cachedmethod(lambda self: self.cache, key=lambda _, user, method, session: (user, method))
     def get_authorized_dag_ids(
         self,
         *,

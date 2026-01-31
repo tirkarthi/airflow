@@ -21,6 +21,7 @@ import collections
 from typing import TYPE_CHECKING, Annotated, Any
 
 import structlog
+from cachetools import TTLCache, cached
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -58,6 +59,7 @@ from airflow.api_fastapi.core_api.services.ui.task_group import (
     get_task_group_children_getter,
     task_group_to_dict_grid,
 )
+from airflow.configuration import conf as airflow_conf
 from airflow.models.dag_version import DagVersion
 from airflow.models.dagrun import DagRun
 from airflow.models.serialized_dag import SerializedDagModel
@@ -65,6 +67,8 @@ from airflow.models.taskinstance import TaskInstance
 
 log = structlog.get_logger(logger_name=__name__)
 grid_router = AirflowRouter(prefix="/grid", tags=["Grid"])
+CACHE_TTL = airflow_conf.getint("fab", "cache_ttl", fallback=30)
+cache: TTLCache = TTLCache(maxsize=1024, ttl=CACHE_TTL)
 
 
 def _get_latest_serdag(dag_id, session):
@@ -84,6 +88,7 @@ def _get_latest_serdag(dag_id, session):
     return serdag
 
 
+@cached(cache, key=lambda dag_id, dag_version_id, session: (dag_id, dag_version_id))
 def _get_serdag(dag_id, dag_version_id, session) -> SerializedDagModel | None:
     # this is a simplification - we account for structure based on the first task
     version = session.scalar(

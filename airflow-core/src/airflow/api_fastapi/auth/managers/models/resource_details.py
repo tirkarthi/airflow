@@ -38,7 +38,7 @@ class ConnectionDetails:
     team_name: str | None = None
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class DagDetails:
     """Represents the details of a DAG."""
 
