@@ -71,6 +71,7 @@ CACHE_TTL = airflow_conf.getint("fab", "cache_ttl", fallback=30)
 cache: TTLCache = TTLCache(maxsize=1024, ttl=CACHE_TTL)
 
 
+@cached(cache, key=lambda dag_id, session: dag_id)
 def _get_latest_serdag(dag_id, session):
     serdag = session.scalar(
         select(SerializedDagModel)
